@@ -1,0 +1,9 @@
+#音频文件性能测试
+
+本脚本提供发送请求，具体性能指标可以在数据库中统计
+
+sql
+统计请求的平均耗时
+#select AVG((UNIX_TIMESTAMP(finish_time) - UNIX_TIMESTAMP(start_time))) as time from saas_audio_req_list where btid like '1597306%';
+
+
