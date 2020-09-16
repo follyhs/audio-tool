@@ -8,7 +8,8 @@ import getopt
 import os
 
 
-accessKey ="J1VpmBnMKXvxNgg0eecJ"
+#accessKey ="J1VpmBnMKXvxNgg0eecJ"
+accessKey ="4Ky6AV4hE0pWLeG1bXNw"
 appId="default"
 audioType = "POLITICAL_ABUSE_PORN_AD_MOAN_ANTHEN"
 
@@ -23,13 +24,12 @@ def readData():
     return datas
 
 def predict(argv):
-    log("DEBUG", argv)
-    if len(argv) != 2:
-        log("ERROR", "query argv len != 2")
+    if len(argv) != 3:
+        log("FATAL", "query argv len != 3")
         return
     path    = argv[0]
     saasUrl = argv[1]
-
+    prefix = argv[2]
     datas = readData()
     datas = datas[1:]
     count = 0
@@ -46,7 +46,7 @@ def predict(argv):
         headers = {
             'Content-Type': 'application/json'
         }
-        btId = "oppoTest-" + items[0]
+        btId = prefix + items[0]
         data=dict()
         data["accessKey"] = accessKey
         data["btId"] = btId

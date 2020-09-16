@@ -7,7 +7,8 @@ import sys
 import getopt
 import os
 
-accessKey ="J1VpmBnMKXvxNgg0eecJ"
+#accessKey ="J1VpmBnMKXvxNgg0eecJ"
+accessKey ="4Ky6AV4hE0pWLeG1bXNw"
 appId ="default"
 audioType = "POLITICAL_ABUSE_PORN_AD_MOAN_ANTHEN"
 callback = "http://127.0.0.1:19983"
@@ -27,12 +28,12 @@ def readData(path):
     return datas
 
 def predict(argv):
-    if len(argv) != 2:
-        log("ERROR", "argv len != 3")
+    if len(argv) != 3:
+        log("FATAL", "request argv len != 3")
         return
     path = argv[0]
     saasUrl  = argv[1]
-
+    prefix = argv[2]
     datas = readData(path)
     datas = datas[1:]
     count = 0
@@ -58,7 +59,7 @@ def predict(argv):
         realData["accessKey"] = accessKey       # o0vvgryiWbP988c8uV3K
         realData["appId"] = appId
         realData["type"] = audioType
-        realData["btId"] = "oppoTest-" + items[0]
+        realData["btId"] = prefix + items[0]
         realData["contentType"] = "URL"
         realData["callback"] = callback
         try:

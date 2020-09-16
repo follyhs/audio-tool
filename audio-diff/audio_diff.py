@@ -7,7 +7,6 @@ import sys
 import getopt
 import os
 import json
-import demjson
 
 def log(level, info):
     print("logLev=[{}]    info={}".format(level, info))
@@ -25,14 +24,26 @@ def readData(inFile):
 def diffProc(oppo, online):
     opRes = json.loads(oppo)
     onRes = json.loads(online)
+    if opRes.get("riskLevel") == None or onRes.get("riskLevel") == None or opRes.get("labels") == None or onRes.get("labels") == None:
+      return False
+
     if opRes["riskLevel"] == onRes["riskLevel"] and opRes["labels"] == onRes["labels"]:
         return False
     return True
 
 def writeFile(online, oppo):
+    onlinej = json.loads(online)
+    oppoj = json.loads(oppo)
     res = dict()
-    res["online"] = {"riskLevel":online["riskLevel"], "labels":online["labels"]}
-    res["oppo"] = {"riskLevel":online["riskLevel"], "labels":online["labels"]}
+    tmp = dict() 
+    tmp["riskLevel"] = onlinej["riskLevel"]
+    tmp["labels"] = onlinej["labels"]
+    res["online"] = tmp
+    
+    tmp2 = dict()
+    tmp2["riskLevel"] = oppoj["riskLevel"]
+    tmp2["labels"] = oppoj["labels"]
+    res["oppo"] = tmp2
     with open("diff-result", "a") as f:
         f.write(json.dumps(res) + "\n")
 
@@ -53,10 +64,9 @@ def predict(argv):
     result = {}
     for key, value in onData.items():
         res = opData.get(key)
-        if res != None and diffProc(res, value):
-            count += 1
+	if res != None and diffProc(res, value):
+	    count += 1
             writeFile(value, res)
-    print("result:", count/len(onData))
-    os.remove(oppo)
+    print("result: ", "different: ",count, "total: ", len(onData))
 if __name__ == "__main__":
     predict(sys.argv[1:])
