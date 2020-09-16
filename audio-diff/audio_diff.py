@@ -31,8 +31,8 @@ def diffProc(oppo, online):
 
 def writeFile(online, oppo):
     res = dict()
-    res["online"] = online
-    res["oppo"] = oppo
+    res["online"] = {"riskLevel":online["riskLevel"], "labels":online["labels"]}
+    res["oppo"] = {"riskLevel":online["riskLevel"], "labels":online["labels"]}
     with open("diff-result", "a") as f:
         f.write(json.dumps(res) + "\n")
 
@@ -57,7 +57,6 @@ def predict(argv):
             count += 1
             writeFile(value, res)
     print("result:", count/len(onData))
-    os.remove(online)
     os.remove(oppo)
 if __name__ == "__main__":
     predict(sys.argv[1:])

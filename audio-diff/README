@@ -1,8 +1,9 @@
 # 音频文件diff工具
 
 ## 使用说明
-所有配置参数都在start.sh中配置
-start.sh 中有具体字段说明
+result-online 是线上请求的结果
+需要在start.sh 中配置好私有化环境的地址
+如果需要修改accessKey, appId 需要在 audio_query.py, audio_request.py的文件开头修改
 
 ## 使用步骤
 - 配置python3环境

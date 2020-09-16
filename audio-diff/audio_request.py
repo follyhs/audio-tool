@@ -7,7 +7,7 @@ import sys
 import getopt
 import os
 
-accessKey ="Wm3sYivMpGvmY1TmWSwb"
+accessKey ="J1VpmBnMKXvxNgg0eecJ"
 appId ="default"
 audioType = "POLITICAL_ABUSE_PORN_AD_MOAN_ANTHEN"
 callback = "http://127.0.0.1:19983"
@@ -58,7 +58,7 @@ def predict(argv):
         realData["accessKey"] = accessKey       # o0vvgryiWbP988c8uV3K
         realData["appId"] = appId
         realData["type"] = audioType
-        realData["btId"] = "2oppotest-" + items[0]
+        realData["btId"] = "oppoTest-" + items[0]
         realData["contentType"] = "URL"
         realData["callback"] = callback
         try:
@@ -67,7 +67,7 @@ def predict(argv):
         except:
             log("ERROR", "request")
             continue
-        time.sleep(0.008)
+        time.sleep(1)
 
 if __name__ == "__main__":
     predict(sys.argv[1:])
