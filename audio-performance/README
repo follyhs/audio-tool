@@ -5,5 +5,14 @@
 sql
 统计请求的平均耗时
 #select AVG((UNIX_TIMESTAMP(finish_time) - UNIX_TIMESTAMP(start_time))) as time from saas_audio_req_list where btid like '1597306%';
+统计请求的实时率：1s可以处理多少时长的音频
+#select sum(unix_timestamp(finish_time) - unix_timestamp(start_time)) / sum(length) from saas_audio_req_list where  btid like 'tool%';
+吞吐量：每秒的处理的请求数
+#select  count(*) /(TIMESTAMPDIFF(second,'2020-09-16 20:44:01','2020-09-16 20:46:01')) as res from saas_audio_req_list  where  finish_time between '2020-09-16 20:44:01' and '2020-09-16 20:46:01' and  btid like 'tool-%';
+
+自己选择时间其中的一个执行请求的时间段
+finish_time1:取值的开始时间
+finish_time2:取值的结束时间
+
 
 

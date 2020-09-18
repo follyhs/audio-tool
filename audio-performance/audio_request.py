@@ -6,10 +6,11 @@ import pandas as pd
 import sys
 import getopt
 import os
+import random
 
 
 url="https://audio-annotation-1251671073.cos.ap-shanghai.myqcloud.com/05ba0f62fe13f4acde073dd22beb3431_a0004.wav"
-accessKey ="Wm3sYivMpGvmY1TmWSwb"
+accessKey ="4Ky6AV4hE0pWLeG1bXNw"
 appId="default"
 audioType = "POLITICAL_ABUSE_PORN_AD_MOAN_ANTHEN"
 callback="http://127.0.0.1:19983"
@@ -29,18 +30,22 @@ def predict(argv):
     wait = 1 / qps
     
     for i in range(reqCount):
+        headers = {
+                'Content-Type': 'application/json'
+            }
         realData = dict()
         data = dict()
         data["returnAllText"] = False
         data["url"] = url
-        data["tokenId"]="test2"
+        data["tokenId"] ="test2"
         realData["data"] = data
         realData["accessKey"] = accessKey       # o0vvgryiWbP988c8uV3K
         realData["appId"] = appId
         realData["type"] = audioType
-        realData["btId"] = "test-" + str(uuid.uuid4())
+        realData["btId"] = "tool-" + str(random.randint(0,100000))
         realData["contentType"] = "URL"
         realData["callback"] = callback
+        print(json.dumps(realData)) 
         
         try:
             result = json.loads(requests.post(saasUrl, data=json.dumps(realData), headers=headers).content.decode())

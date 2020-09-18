@@ -1,5 +1,5 @@
 #!/bin/bash
-prefix="oppotest1-"
+prefix="oppotest2-"
 input="re-audio-diff.xlsx"  #样本数据格式是 ｜btId ｜url ｜数据类型｜
 #opurl="http://test.fengkongcloud.com/v2/saas/anti_fraud/audio"  #私有化的URL
 opurl="http://118.89.221.77/v2/saas/anti_fraud/audio"  #测试使用
