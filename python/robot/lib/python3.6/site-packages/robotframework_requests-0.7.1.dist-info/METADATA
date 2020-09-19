@@ -1,0 +1,28 @@
+Metadata-Version: 2.1
+Name: robotframework-requests
+Version: 0.7.1
+Summary: Robot Framework keyword library wrapper around requests
+Home-page: http://github.com/bulkan/robotframework-requests
+Author: Bulkan Savun Evcimen
+Author-email: bulkan@gmail.com
+Maintainer: Luca Giovenzana
+Maintainer-email: luca@giovenzana.org
+License: MIT
+Keywords: robotframework testing test automation http client requests
+Platform: any
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Testing
+Requires-Dist: robotframework
+Requires-Dist: requests
+Provides-Extra: test
+Requires-Dist: pytest ; extra == 'test'
+Requires-Dist: flask ; extra == 'test'
+Requires-Dist: coverage ; extra == 'test'
+Requires-Dist: flake8 ; extra == 'test'
+
+Robot Framework keyword library wrapper around the HTTP client library requests.
+
+

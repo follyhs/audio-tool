@@ -1,0 +1,49 @@
+{
+  "build": "0",
+  "build_number": 0,
+  "channel": "https://repo.anaconda.com/pkgs/main/linux-64",
+  "constrains": [],
+  "depends": [],
+  "extracted_package_dir": "/home/work/miniconda3/pkgs/ca-certificates-2020.7.22-0",
+  "features": "",
+  "files": [
+    "ssl/cacert.pem",
+    "ssl/cert.pem"
+  ],
+  "fn": "ca-certificates-2020.7.22-0.conda",
+  "legacy_bz2_md5": "b54273d6725ea24233dcf1d8df26a718",
+  "license": "MPL 2.0",
+  "link": {
+    "source": "/home/work/miniconda3/pkgs/ca-certificates-2020.7.22-0",
+    "type": 1
+  },
+  "md5": "3efde69d1bd20bac0b3be953e0c26114",
+  "name": "ca-certificates",
+  "package_tarball_full_path": "/home/work/miniconda3/pkgs/ca-certificates-2020.7.22-0.conda",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "ssl/cacert.pem",
+        "path_type": "hardlink",
+        "sha256": "2782f0f8e89c786f40240fc1916677be660fb8d8e25dede50c9f6f7b0c2c2178",
+        "sha256_in_prefix": "2782f0f8e89c786f40240fc1916677be660fb8d8e25dede50c9f6f7b0c2c2178",
+        "size_in_bytes": 222172
+      },
+      {
+        "_path": "ssl/cert.pem",
+        "path_type": "softlink",
+        "sha256": "2782f0f8e89c786f40240fc1916677be660fb8d8e25dede50c9f6f7b0c2c2178",
+        "size_in_bytes": 222172
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "33cf0a0d3e8a1e768ccd82c1b65c7ce932105991d348e694881204c1ba139af1",
+  "size": 127561,
+  "subdir": "linux-64",
+  "timestamp": 1598370614858,
+  "track_features": "",
+  "url": "https://repo.anaconda.com/pkgs/main/linux-64/ca-certificates-2020.7.22-0.conda",
+  "version": "2020.7.22"
+}

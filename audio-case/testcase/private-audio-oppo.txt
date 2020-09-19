@@ -1,0 +1,769 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           json
+Library           ../thriftLib/RequestKeywords.py
+Library           SSHLibrary
+Library           DateTime
+Library           Collections
+
+*** Variables ***
+${uri1}           v2/saas/anti_fraud/audio
+${uri2}           v2/saas/anti_fraud/query_audio
+${url}            http://118.89.221.77
+${urls}           https://10.141.56.227
+${accesskey}      4Ky6AV4hE0pWLeG1bXNw
+${callback}       http://10.141.16.179:8900/
+
+*** Test Cases ***
+query-nonexist-para
+    [Documentation]    查询接口使用不存在的参数
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://sdkalarm.bj.bcebos.com/yanshi/political08.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    sleep    10
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}","test":"test"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    log    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+handel-data-result-porn
+    [Documentation]    正确离线处理
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    sleep    120
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}","test":"test"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    log    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    ${audioText}    get json value    ${result}    /audioText
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+accesskey-not-exist
+    [Documentation]    不存在accesskey
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"TEST","type":"AD_POLITICAL_MOAN_EMOTION","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    9101
+    should be equal    ${message}    "无权限操作(invalid accesskey or service not avaliable)"
+
+accesskey-null
+    [Documentation]    查询接口accesskey为空
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"","btid":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    9101
+    should be equal    ${message}    "无权限操作(invalid accesskey or service not avaliable)"
+
+accesskey-miss
+    [Documentation]    查询接口没有accesskey
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"btid":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    9101
+    should be equal    ${message}    "无权限操作(invalid accesskey or service not avaliable)"
+
+type-all
+    [Documentation]    所有必填参数和addtion选填参数，addition传入EMOTION参数
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    PORN_AD_POLITICAL_MOAN_EMOTION_GENDER_SCENE_TIMBRE_ABUSE_LANGUAGE_SING
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    log    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+typ-LANGUAGE
+    [Documentation]    接口所有必填参数使用合法值，提交音频后，立即调用查询接口，返回1101正在处理中code码
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    LANGUAGE
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-SING
+    [Documentation]    接口所有必填参数使用合法值
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    SING
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","appId":"default","data":{"audioName":"可选值","ip":"10.0.23.32","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-AD-all
+    [Documentation]    接口所有必填参数使用合法值
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    AD
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","appId":"default","data":{"audioName":"可选值","ip":"10.0.23.32","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-political-appid-select
+    [Documentation]    所有必填参数和appId选填参数
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    POLITICAL
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","appId":"default","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-emoiton
+    [Documentation]    接口所有必填参数使用合法值，提交音频后，立即调用查询接口，返回1101正在处理中code码
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    EMOTION
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}    #{"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://voice-bj.bj.bcebos.com/20190327/bcab51340a4c82ea4105cdd8fecfb54c_a0000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+    sleep    1
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1101
+    should be equal    ${message}    "正在处理(the audio is handling)"
+
+type-moan
+    [Documentation]    接口所有必填参数使用合法值，提交音频后，立即调用查询接口，返回1101正在处理中code码
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    MOAN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+    sleep    1
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1101
+    should be equal    ${message}    "正在处理(the audio is handling)"
+
+type-SCENE
+    [Documentation]    type为SCENE场景识别
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    SCENE
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","appId":"default","data":{"audioName":"可选值","ip":"10.0.23.32","channel":"AUDIO","tokenId":"toekn123","url":"http://audio-tmp.cdn.bcebos.com/laobao.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+    sleep    20
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    log    ${result}
+
+type-GENDER
+    [Documentation]    type为gender性别识别
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    GENDER
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","appId":"default","data":{"audioName":"可选值","ip":"10.0.23.32","channel":"AUDIO","tokenId":"toekn123","url":"http://audio-tmp.cdn.bcebos.com/laobao.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+    sleep    20
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    log    ${result}
+
+type-ABUSE
+    [Documentation]    type为gender性别识别
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    ABUSE
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","appId":"default","data":{"audioName":"可选值","ip":"10.0.23.32","channel":"AUDIO","tokenId":"toekn123","url":"http://audio-tmp.cdn.bcebos.com/laobao.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+    sleep    20
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    log    ${result}
+
+type-SCENE_GENDER
+    [Documentation]    type组合为scene和gender
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    SCENE_GENDER
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-SCENE_PORN
+    [Documentation]    type组合为scene和gender
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    SCENE_PORN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-SCENE_MOAN
+    [Documentation]    type组合为scene和gender
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    SCENE_MOAN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-SCENE_DEFAULT
+    [Documentation]    type组合为scene和gender
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    SCENE_DEFAULT
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-GENDER_PORN
+    [Documentation]    type是组合
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    GENDER_PORN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-GENDER_MOAN
+    [Documentation]    type是组合
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    GENDER_MOAN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-GENDER_DEFAULT
+    [Documentation]    type是组合
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    GENDER_DEFAULT
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-MOAN_PORN
+    [Documentation]    所有必填参数和addtion选填参数，addition传入EMOTION参数
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    MOAN_PORN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-AD_MOAN
+    [Documentation]    所有必填参数和addtion选填参数，addition传入EMOTION参数
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    AD_MOAN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-AD_PORN
+    [Documentation]    所有必填参数和addtion选填参数，addition传入EMOTION参数
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${type}    set variable    AD_PORN
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"${type}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+type-null
+    [Documentation]    type字段为空
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(type should be set)"
+
+type-not-exist
+    [Documentation]    非法type
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"ZHIB","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(invalid type)"
+
+type-miss
+    [Documentation]    缺少type字段
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","btid":"${btid}","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(type should be set)"
+
+nonexist-para-commit
+    [Documentation]    传入不存在的参数，其他参数均正常
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"ZHIBO","btid":"${btid}","data":{"test":"test1","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+btid-miss
+    [Documentation]    缺少btid字段
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"LANGUAGE_SING","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(btId should be set)"
+
+btid-null
+    [Documentation]    btit字段为空
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"SCENE_MOAN","btid":"","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(btId should be set)"
+
+btid-illegal-data
+    [Documentation]    btid传入""值，返回json格式不正确
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"QQ","btid":"""","data":{"url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(body is invalid json, error:invalid character '\"' after object key:value pair)"
+
+url-illegal
+    [Documentation]    url字段为无效音频网址，查询返回1903错误
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"ZHIBO","btid":"${btid}","data":{"url":"http://123.com"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+    sleep    20
+    ${data}    set variable    {"accessKey":"${accesskey}","btid":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1903
+    should be equal    ${message}    "服务失败(decoding the audio failed)"
+
+url-miss
+    [Documentation]    缺少url，其他选填参数都存在
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"ZHIBO","btid":"${btid}","appId":"default","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO可选有默认值","tokenId":"toekn123可选"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(url or content should be provided)"
+
+url-null
+    [Documentation]    url字段为空
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"ZHIBO","btid":"${btid}","data":{"url":""}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(url or content should be provided)"
+
+callBack
+    [Documentation]    增加回调
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","callback":"${callback}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    sleep    100
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+
+callBack-iregal
+    [Documentation]    回调地址为非法参数
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","callback":"123","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should be equal    ${message}    "参数不合法(callback should have prefix of http)"
+
+callBack-拒绝连接
+    [Documentation]    回调地址为非法参数
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","callback":"http://10.141.16.179:80/","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+callBack-null
+    [Documentation]    回调地址为空
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","callback":"","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1100
+    should be equal    ${message}    "成功"
+
+callbackParam-iregal
+    [Documentation]    回调参数非法内容格式
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","callback":"${callback}","callbackParam":"test","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should contain    ${message}    参数不合法(params format error:NOT JSON DATA
+
+callbackParam-null
+    [Documentation]    回调参数为空
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"PORN","btid":"${btid}","callback":"${callback}","callbackParam":"","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${message}    get json value    ${result}    /message
+    should be equal    ${code}    1902
+    should contain    ${message}    参数不合法(params format error:NOT JSON DATA
+
+returnAllText-reject
+    [Documentation]    回调返回全部文本
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"POLITICAL_PORN_MOAN","btid":"${btid}","callback":"${callback}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","returnAllText":true,"tokenId":"toekn123","url":"http://static-1253442168.file.myqcloud.com/lecture_advance_audio/7062850_1529054831000.mp3"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    sleep    100
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+
+returnAllText-pass
+    [Documentation]    回调返回全部文本
+    ${btid}=    Get Current Date    result_format=epoch
+    create session    saas    ${url}
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"POLITICAL_PORN_MOAN","btid":"${btid}","callback":"${callback}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","returnAllText":true,"tokenId":"toekn123","url":"http://sdkalarm.cdn.bcebos.com/20181201_150703.m4a"}}
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    sleep    100
+    ${data}    set variable    {"accessKey":"${accesskey}","btId":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    ${result}    set variable    ${response.content}
+    log    ${result}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${audioText}    get json value    ${result}    /audioText
+    should be equal    ${code}    1100
+
+muteDetection
+    [Documentation]    静音检测，第一段静音不过AE，第二段内容123
+    ...    增加label字段标识静音（回调和查询）
+    create session    saas    ${url}
+    ${btid}=    Get Current Date    result_format=epoch
+    ${data}    set variable    {"accessKey":"${accesskey}","type":"DEFAULT","appId":"default","btid":"${btid}","callback":"${callback}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","returnAllText":true,"tokenId":"toekn123","url":"http://sdkalarm.cdn.bcebos.com/motecase.m4a"},"callbackParam":{"test1":1,"test2":"qew","test3":true}}    #{"accessKey":"${accesskey}","type":"DEFAULT","appId":"default","btid":"${btid}","callback":"${callback}","data":{"audioName":"可选值","ip":"10.0.23.32可选","channel":"AUDIO","returnAllText":true,"tokenId":"toekn123","url":"http://sdkalarm.cdn.bcebos.com/20181201_150703.m4a"},"callbackParam":{"test1":1,"test2":"qew","test3":true}}    #第二个是passurl
+    ${response}    post request    saas    ${uri1}    ${data}
+    log    ${response.status_code}
+    ${result}    set variable    ${response.content}
+    ${result}    loads    ${result}
+    ${code}    get json value    ${result}    /code
+    ${requestId}    get json value    ${result}    /requestId
+    should be equal    ${code}    1100
+    sleep    50
+    ${data}    set variable    {"accessKey":"${accessKey}","btid":"${btid}"}
+    ${response}    post request    saas    ${uri2}    ${data}
+    ${result}    set variable    ${response.content}
+    Comment    log    ${result}
+    ${result}    loads    ${result}

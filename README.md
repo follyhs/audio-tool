@@ -1,3 +1,13 @@
+## 环境配置
+- 安装conda 环境:
+ 	bash Miniconda3-latest-Linux-x86_64.sh
+- 拷贝环境：
+	把pyhton/robot 拷贝到miniconda3/envs/
+- 激活环境：
+	conda activate robot	
+
+
+
 #### 音频私有化测试工具
 1. 性能测试，效果测试工具
 2. 如下提供使用说明手册
