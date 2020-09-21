@@ -38,17 +38,18 @@ def writeFile(online, oppo):
     tmp = dict() 
     tmp["riskLevel"] = onlinej["riskLevel"]
     tmp["labels"] = onlinej["labels"]
+    tmp["requestId"] = onlinej["requestId"] 
     res["online"] = tmp
-    
     tmp2 = dict()
     tmp2["riskLevel"] = oppoj["riskLevel"]
     tmp2["labels"] = oppoj["labels"]
+    tmp2["requestId"] = oppoj["requestId"] 
     res["oppo"] = tmp2
     with open("diff-result", "a") as f:
         f.write(json.dumps(res) + "\n")
 
 def predict(argv):
-    log("DEBUG", argv)
+    #log("DEBUG", argv)
     if len(argv) != 2:
         log("ERROR", "diff argv len != 2")
         return
@@ -64,8 +65,8 @@ def predict(argv):
     result = {}
     for key, value in onData.items():
         res = opData.get(key)
-	if res != None and diffProc(res, value):
-	    count += 1
+        if res != None and diffProc(res, value):
+            count += 1
             writeFile(value, res)
     print("result: ", "different: ",count, "total: ", len(onData))
 if __name__ == "__main__":

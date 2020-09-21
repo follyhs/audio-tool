@@ -9,7 +9,7 @@ import os
 
 
 #accessKey ="J1VpmBnMKXvxNgg0eecJ"
-accessKey ="4Ky6AV4hE0pWLeG1bXNw"
+accessKey ="X4nf23B7TpsQeKrGMD3G"
 appId="default"
 audioType = "POLITICAL_ABUSE_PORN_AD_MOAN_ANTHEN"
 
@@ -50,10 +50,10 @@ def predict(argv):
         data=dict()
         data["accessKey"] = accessKey
         data["btId"] = btId
-        log("DEBUG", data)
+        #log("DEBUG", data)
         try:
             result = requests.post(saasUrl, data=json.dumps(data), headers=headers).content.decode()
-            log("INFO", result)
+            #log("INFO", result)
             res["oppoTest-" + items[0]] = result
         except:
             log("ERROR", "query")

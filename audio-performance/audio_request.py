@@ -10,7 +10,7 @@ import random
 
 
 url="https://audio-annotation-1251671073.cos.ap-shanghai.myqcloud.com/05ba0f62fe13f4acde073dd22beb3431_a0004.wav"
-accessKey ="4Ky6AV4hE0pWLeG1bXNw"
+accessKey ="X4nf23B7TpsQeKrGMD3G"
 appId="default"
 audioType = "POLITICAL_ABUSE_PORN_AD_MOAN_ANTHEN"
 callback="http://127.0.0.1:19983"
@@ -42,7 +42,7 @@ def predict(argv):
         realData["accessKey"] = accessKey       # o0vvgryiWbP988c8uV3K
         realData["appId"] = appId
         realData["type"] = audioType
-        realData["btId"] = "tool-" + str(random.randint(0,100000))
+        realData["btId"] = "haisong-" + str(random.randint(0,100000))
         realData["contentType"] = "URL"
         realData["callback"] = callback
         print(json.dumps(realData)) 
