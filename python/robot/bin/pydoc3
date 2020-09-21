@@ -1,1 +1,5 @@
-pydoc3.6
+#!/home/work/miniconda3/envs/robot/bin/python3.6
+
+import pydoc
+if __name__ == '__main__':
+    pydoc.cli()
