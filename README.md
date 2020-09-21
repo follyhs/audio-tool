@@ -56,7 +56,11 @@ finish_time1:取值的开始时间
 finish_time2:取值的结束时间
 
 
-
-
+## 执行case
+1.启动mock服务 
+在audio-mock/mock_start.sh 中修改 数据库信息
+执行audio-mock/mock_start.sh
+2.在audio-case/start.sh 修改url(主接口)， callback（mock服务的ip） 
+执行audio-case/start.sh
 
 
